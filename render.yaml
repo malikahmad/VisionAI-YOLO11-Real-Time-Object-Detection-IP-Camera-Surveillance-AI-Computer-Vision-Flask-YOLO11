@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: visionai-yolo11-studio
+    runtime: docker
+    plan: starter
+    healthCheckPath: /healthz
+    envVars:
+      - key: DEPLOYMENT_MODE
+        value: production
+      - key: VISIONAI_USERNAME
+        sync: false
+      - key: VISIONAI_PASSWORD
+        sync: false

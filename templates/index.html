@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VisionAI — YOLO11 Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a class="brand" href="#"><span class="brand-mark"><i class="bi bi-eye-fill"></i></span><span>Vision<span class="brand-accent">AI</span></span></a>
+      <div class="side-label">WORKSPACE</div>
+      <a class="nav-link active" href="#"><i class="bi bi-grid-1x2-fill"></i> Detection Studio</a>
+      <a class="nav-link" href="#results"><i class="bi bi-bar-chart-line"></i> Results</a>
+      <div class="sidebar-bottom">
+        <div class="engine-card">
+          <div class="engine-icon"><i class="bi bi-cpu"></i></div>
+          <div><strong>YOLO11 Engine</strong><small>Object detection</small></div>
+          <span class="online-dot"></span>
+        </div>
+        <div class="sidebar-foot">LOCAL WORKSPACE <span>v1.0</span></div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar">
+        <div class="mobile-brand"><span class="brand-mark"><i class="bi bi-eye-fill"></i></span> Vision<span class="brand-accent">AI</span></div>
+        <div class="breadcrumb">Workspace <i class="bi bi-chevron-right"></i> <strong>Detection Studio</strong></div>
+        <div class="top-status"><span class="online-dot"></span> Local inference</div>
+      </header>
+
+      <section class="page-heading">
+        <div>
+          <div class="eyebrow"><span></span> COMPUTER VISION WORKSPACE</div>
+          <h1>Detection <span>Studio</span></h1>
+          <p>Turn your videos into actionable visual intelligence with YOLO11.</p>
+        </div>
+        <div class="model-pill"><i class="bi bi-stars"></i> Powered by Ultralytics YOLO11</div>
+      </section>
+
+      <section class="panel camera-panel" id="liveCameraPanel">
+        <div class="panel-heading">
+          <div><div class="section-kicker">LIVE / NETWORK CAMERA</div><h2>IP camera stream detection</h2><p class="panel-subtitle">Connect an RTSP camera on the same local network or VPN.</p></div>
+          <span class="live-tag"><span></span> REAL-TIME</span>
+        </div>
+        <div class="camera-controls">
+          <div class="field camera-url-field">
+            <label for="cameraUrl">RTSP camera URL</label>
+            <input id="cameraUrl" type="password" autocomplete="off" placeholder="rtsp://username:password@192.168.1.50:554/stream1">
+            <small>Credentials are used only for the active connection. Avoid sharing this URL or exposing it in screenshots.</small>
+          </div>
+          <div class="camera-actions">
+            <button class="primary-button" id="startCameraButton" type="button"><i class="bi bi-camera-video"></i> Start live detection</button>
+            <button class="camera-stop-button" id="stopCameraButton" type="button" disabled><i class="bi bi-stop-circle"></i> Stop stream</button>
+          </div>
+        </div>
+        <div class="camera-live-grid">
+          <div class="camera-feed-wrap"><img id="cameraFeed" alt="Live IP camera object detection feed" class="hidden"><div id="cameraFeedEmpty" class="camera-feed-empty"><i class="bi bi-camera-video-off"></i><strong>Camera feed is offline</strong><span>Start a stream to view annotated frames.</span></div></div>
+          <div class="camera-stats">
+            <div class="camera-state"><span id="cameraStateDot"></span><strong id="cameraState">STOPPED</strong></div>
+            <p id="cameraMessage">No camera session is active.</p>
+            <div class="metric"><span>LIVE DETECTIONS</span><strong id="cameraDetectionCount">0</strong></div>
+            <div><strong class="camera-class-title">Detected classes</strong><div id="cameraClassList" class="class-list"></div></div>
+          </div>
+        </div>
+        <p class="privacy-note"><i class="bi bi-shield-lock"></i> RTSP access is restricted to private/local network addresses. One camera stream is supported by this starter version.</p>
+      </section>
+
+      <section class="workspace-grid">
+        <div class="panel upload-panel">
+          <div class="panel-heading">
+            <div><div class="section-kicker">01 / INPUT SOURCE</div><h2>Upload your video</h2></div>
+            <span class="step-icon"><i class="bi bi-cloud-arrow-up"></i></span>
+          </div>
+
+          <label class="dropzone" id="dropzone" for="videoInput">
+            <input type="file" id="videoInput" accept="video/mp4,video/avi,video/quicktime,video/x-matroska,video/webm,.mkv,.avi">
+            <div class="upload-symbol"><i class="bi bi-cloud-arrow-up"></i></div>
+            <h3>Drop your video here</h3>
+            <p>or <span>browse files</span> from your computer</p>
+            <div class="file-types">MP4 · AVI · MOV · MKV · WEBM <b>MAX 700 MB</b></div>
+          </label>
+          <div class="selected-file hidden" id="selectedFile">
+            <div class="file-icon"><i class="bi bi-file-earmark-play"></i></div>
+            <div class="file-info"><strong id="fileName">video.mp4</strong><small id="fileSize">0 MB</small></div>
+            <button class="icon-button" id="removeFile" type="button" aria-label="Remove video"><i class="bi bi-x-lg"></i></button>
+          </div>
+
+          <div class="settings-heading"><div><div class="section-kicker">02 / MODEL CONFIGURATION</div><h2>Detection settings</h2></div></div>
+          <div class="settings-grid">
+            <div class="field">
+              <label for="model">YOLO11 model</label>
+              <select id="model">
+                <option value="yolo11n">YOLO11n — Fastest</option>
+                <option value="yolo11s">YOLO11s — Small</option>
+                <option value="yolo11m" selected>YOLO11m — Balanced</option>
+                <option value="yolo11l">YOLO11l — Large</option>
+                <option value="yolo11x">YOLO11x — Extra large</option>
+              </select>
+              <small>Model weights download automatically on first use.</small>
+            </div>
+            <div class="field">
+              <label for="imageSize">Inference image size</label>
+              <select id="imageSize">
+                <option>320</option><option>480</option><option selected>640</option>
+                <option>800</option><option>960</option><option>1280</option>
+              </select>
+              <small>Larger sizes can improve small-object detection.</small>
+            </div>
+            <div class="field full-field">
+              <div class="range-label"><label for="confidence">Confidence threshold</label><strong id="confidenceValue">0.30</strong></div>
+              <input type="range" id="confidence" min="0.05" max="0.95" step="0.05" value="0.30">
+              <div class="range-hints"><span>More detections</span><span>Higher certainty</span></div>
+            </div>
+            <div class="toggle-row full-field">
+              <div class="toggle-copy"><strong>Object tracking</strong><small>Maintain object IDs between frames using ByteTrack.</small></div>
+              <label class="switch"><input type="checkbox" id="tracking" checked><span></span></label>
+            </div>
+          </div>
+          <button class="primary-button" id="startButton" disabled><i class="bi bi-stars"></i> Start detection <i class="bi bi-arrow-right"></i></button>
+          <p class="privacy-note"><i class="bi bi-shield-lock"></i> Videos are processed locally on your machine.</p>
+        </div>
+
+        <div class="right-column">
+          <div class="panel preview-panel">
+            <div class="panel-heading"><div><div class="section-kicker">LIVE WORKSPACE</div><h2>Video preview</h2></div><span class="live-tag"><span></span> PREVIEW</span></div>
+            <div class="preview-stage" id="previewStage">
+              <div class="preview-empty" id="previewEmpty"><div class="preview-play"><i class="bi bi-play-fill"></i></div><strong>Your video preview</strong><span>Upload a video to get started</span></div>
+              <video id="sourcePreview" controls class="hidden"></video>
+            </div>
+            <div class="preview-footer"><span><i class="bi bi-camera-video"></i> Input video</span><span id="videoMeta">No video selected</span></div>
+          </div>
+
+          <div class="panel progress-panel">
+            <div class="panel-heading"><div><div class="section-kicker">03 / PROCESSING</div><h2>Detection progress</h2></div><span class="status-badge idle" id="statusBadge">IDLE</span></div>
+            <div class="progress-top"><span id="progressMessage">Waiting for a video</span><strong id="progressPercent">0%</strong></div>
+            <div class="progress-track"><div id="progressBar"></div></div>
+            <div class="progress-meta"><span id="frameProgress">0 / 0 frames</span><span id="deviceLabel">Device: detected at runtime</span></div>
+            <div class="metrics-grid">
+              <div class="metric"><span>OBJECT DETECTIONS</span><strong id="detectionCount">—</strong><i class="bi bi-bounding-box"></i></div>
+              <div class="metric"><span>FRAMES PROCESSED</span><strong id="framesCount">—</strong><i class="bi bi-film"></i></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel results-panel" id="results">
+        <div class="panel-heading"><div><div class="section-kicker">04 / OUTPUT</div><h2>Detection results</h2><p class="panel-subtitle">Your annotated video and detection data will appear here.</p></div><span class="result-icon"><i class="bi bi-folder2-open"></i></span></div>
+        <div class="results-empty" id="resultsEmpty"><i class="bi bi-inboxes"></i><strong>No results yet</strong><span>Complete a detection job to access your files and object statistics.</span></div>
+        <div class="results-content hidden" id="resultsContent">
+          <div class="download-row">
+            <div class="download-file"><span class="download-file-icon video-file"><i class="bi bi-file-earmark-play"></i></span><div><strong>Annotated video</strong><small>MP4 · Bounding boxes and labels</small></div></div>
+            <a class="download-button" id="videoDownload" href="#"><i class="bi bi-download"></i> Download MP4</a>
+          </div>
+          <div class="download-row">
+            <div class="download-file"><span class="download-file-icon csv-file"><i class="bi bi-file-earmark-spreadsheet"></i></span><div><strong>Detection report</strong><small>CSV · Frame, class, confidence and tracking ID</small></div></div>
+            <a class="download-button secondary-button" id="csvDownload" href="#"><i class="bi bi-download"></i> Download CSV</a>
+          </div>
+          <div class="class-summary"><h3>Detected object classes</h3><div id="classList" class="class-list"></div></div>
+        </div>
+      </section>
+      <footer>VISIONAI <span>·</span> YOLO11 VIDEO ANALYTICS <span class="footer-right">Built for local inference</span></footer>
+    </main>
+  </div>
+  <div class="toast" id="toast" role="status"></div>
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
